@@ -12,9 +12,29 @@
             #?(:clj [clojure.java.io :as io])
             [kotoba.shibuya :as shibuya]))
 
+;; The fixture EDN is stored as Datomic/Datascript tx-data
+;; (`[{:db/id -1 :shibuya.scramble/name ... :shibuya.scramble/buildings
+;; "<pr-str blob>" ...}]`, see resources/kotoba/shibuya/shibuya_scramble.synthetic.edn
+;; and scripts/edn-datomize.bb `wrap-map`). `reconstitute-entity` un-namespaces
+;; the single entity's keys back to the bare `:name`/`:bbox-m`/`:buildings`/
+;; `:roads`/`:objects` shape `shibuya/parse-scene` destructures, and `unblob`
+;; parses any pr-str'd non-scalar (nested-map/vector-of-maps) attrs back into
+;; live EDN data.
+#?(:clj
+   (defn- unblob [v]
+     (if (string? v)
+       (try (let [parsed (edn/read-string v)] (if (coll? parsed) parsed v))
+            (catch Exception _ v))
+       v)))
+
+#?(:clj
+   (defn- reconstitute-entity [tx-data]
+     (into {} (map (fn [[k v]] [(keyword (name k)) (unblob v)]))
+           (dissoc (first tx-data) :db/id))))
+
 (defn- load-fixture []
   #?(:clj (with-open [r (io/reader (io/resource "kotoba/shibuya/shibuya_scramble.synthetic.edn"))]
-            (edn/read (java.io.PushbackReader. r)))
+            (reconstitute-entity (edn/read (java.io.PushbackReader. r))))
      :cljs (throw (ex-info "fixture loading is JVM-only in this test suite" {}))))
 
 (def raw-fixture (load-fixture))
