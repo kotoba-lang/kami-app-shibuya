@@ -7,7 +7,7 @@
   resolves a footprint + colour; agent-urdf produces well-formed-looking
   4-DOF XML."
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             #?(:clj [clojure.edn :as edn])
             #?(:clj [clojure.java.io :as io])
             [kotoba.shibuya :as shibuya]))
