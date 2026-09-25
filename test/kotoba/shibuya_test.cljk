@@ -9,7 +9,7 @@
   (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             #?(:clj [clojure.edn :as edn])
-            #?(:clj [clojure.java.io :as io])
+            #?(:clj [kotoba.io :as io])
             [kotoba.shibuya :as shibuya]))
 
 ;; The fixture EDN is stored as Datomic/Datascript tx-data
